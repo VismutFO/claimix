@@ -3,6 +3,22 @@ WORKDIR /usr/src/app
 COPY nodejs ./
 RUN npm install
 # RUN npm ci --only=production
+
+# Set default values for API_HOSTNAME and API_PORT that can be overridden using build arguments
+ARG API_HOSTNAME=localhost
+ARG API_PORT=9998
+
+ENV API_HOSTNAME=${API_HOSTNAME}
+ENV API_PORT=${API_PORT}
+
 COPY build/web ./public-flutter
+
+# Copy the configuration script
+COPY rewrite-config.js ./
+
+# Rewrite the configuration file dynamically
+RUN node rewrite-config.js
+
+# Expose port
 EXPOSE 3000
 CMD [ "npm", "start" ]

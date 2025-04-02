@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'config.dart'; // Import the global config file
 import 'dart:convert';
+import 'b_services.dart';
+import 'add_service_template.dart';
 
 class BDashboardPage extends StatefulWidget {
   final String token;
-  final String dashboardUrl;
 
-  const BDashboardPage({super.key, required this.token, required this.dashboardUrl});
+  const BDashboardPage({
+    super.key,
+    required this.token,
+  });
 
   @override
   State<BDashboardPage> createState() => _BDashboardPageState();
 }
 
 class _BDashboardPageState extends State<BDashboardPage> {
-  String message = "Loading dashboard...";
+  String _dashboardMessage = "Loading dashboard...";
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -22,7 +28,11 @@ class _BDashboardPageState extends State<BDashboardPage> {
   }
 
   Future<void> _loadDashboard() async {
-    final url = Uri.parse(widget.dashboardUrl); // Dashboard API
+    setState(() {
+      _isLoading = true;
+    });
+
+    final url = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.getBusinessDashboard}'); // Dashboard API
 
     try {
       final response = await http.get(
@@ -36,18 +46,44 @@ class _BDashboardPageState extends State<BDashboardPage> {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final responseData = json.decode(response.body);
         setState(() {
-          message = responseData["message"] ?? "Welcome to the dashboard!";
+          _dashboardMessage = responseData["message"] ?? "Welcome to the dashboard!";
         });
       } else {
         setState(() {
-          message = "Failed to load dashboard. Status: ${response.statusCode}";
+          _dashboardMessage = "Failed to load dashboard. Status: ${response.statusCode}";
         });
       }
     } catch (e) {
       setState(() {
-        message = "An error occurred while loading the dashboard: ${e.toString()}";
+        _dashboardMessage = "An error occurred while loading the dashboard: ${e.toString()}";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
+  }
+
+  /// Navigate to BServicesPage
+  void _goToBServicesPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BServicesPage(
+          authToken: widget.token, // Pass the auth token
+        ),
+      ),
+    );
+  }
+
+  /// Navigate to AddServiceTemplatePage
+  void _goToAddServiceTemplatePage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AddServiceTemplatePage(
+          token: widget.token, // Pass the auth token
+        ),
+      ),
+    );
   }
 
   @override
@@ -56,11 +92,33 @@ class _BDashboardPageState extends State<BDashboardPage> {
       appBar: AppBar(
         title: const Text('Dashboard'),
       ),
-      body: Center(
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 18.0),
+      body: Center( // Center the column in the screen
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Center content vertically
+          mainAxisAlignment: MainAxisAlignment.center, // Center content horizontally
+          children: [
+            if (_isLoading)
+              const CircularProgressIndicator()
+            else
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  _dashboardMessage,
+                  style: const TextStyle(fontSize: 18.0),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            const SizedBox(height: 24.0),
+            ElevatedButton(
+              onPressed: _goToBServicesPage,
+              child: const Text('Go to Services'),
+            ),
+            const SizedBox(height: 24.0),
+            ElevatedButton(
+              onPressed: _goToAddServiceTemplatePage,
+              child: const Text('Go to Add Service Template'),
+            ),
+          ],
         ),
       ),
     );

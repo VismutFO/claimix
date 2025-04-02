@@ -1,24 +1,16 @@
 import 'dart:convert';
-
+import 'config.dart'; // Import the global config file
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'idashboard.dart';
 import 'bdashboard.dart';
 
 class LoginPage extends StatefulWidget {
-  final String individualLoginUrl; // Individual User Login
-  final String businessLoginUrl; // Corporate User Login
   final String registerRoute; // Route or URL to the register page
-  final String individualDashboardRoute; // Route or URL to the dashboard page
-  final String businessDashboardRoute; // Route or URL to the dashboard page
 
   const LoginPage({
     super.key,
-    required this.individualLoginUrl,
-    required this.businessLoginUrl,
     required this.registerRoute,
-    required this.individualDashboardRoute,
-    required this.businessDashboardRoute,
   });
 
   @override
@@ -31,7 +23,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    currentLoginUrl = widget.individualLoginUrl; // Default to individual login
+
+    // Default to individual login
+    currentLoginUrl = '${ApiConfig.baseUrl}${ApiConfig.individualLogin}';
   }
 
   @override
@@ -47,8 +41,8 @@ class _LoginPageState extends State<LoginPage> {
                 // Switch API URL based on the selected tab
                 currentLoginUrl =
                     index == 0
-                        ? widget.individualLoginUrl
-                        : widget.businessLoginUrl;
+                        ? '${ApiConfig.baseUrl}${ApiConfig.individualLogin}'
+                        : '${ApiConfig.baseUrl}${ApiConfig.businessLogin}';
               });
             },
             tabs: const [
@@ -102,14 +96,12 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(
               builder: (context) {
-                if (currentLoginUrl == widget.individualLoginUrl) {
+                if (currentLoginUrl == '${ApiConfig.baseUrl}${ApiConfig.individualLogin}') {
                   return IDashboardPage(
-                    dashboardUrl: widget.individualDashboardRoute,
                     token: token,
                   );
                 }
                 return BDashboardPage(
-                  dashboardUrl: widget.businessDashboardRoute,
                   token: token,
                 );
               },

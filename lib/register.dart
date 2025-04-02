@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'config.dart'; // Import the global config file
 import 'dart:convert';
 
 class RegisterPage extends StatefulWidget {
-  final String individualRegisterUrl; // URL for the register endpoint
-  final String businessRegisterUrl; // URL for the register endpoint
   final String loginRoute; // Route or URL to the login page
 
   const RegisterPage({
     super.key,
-    required this.individualRegisterUrl,
-    required this.businessRegisterUrl,
     required this.loginRoute,
   });
 
@@ -24,7 +21,9 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    currentRegisterUrl = widget.individualRegisterUrl; // Default to individual register
+
+    // Default to individual register
+    currentRegisterUrl = '${ApiConfig.baseUrl}${ApiConfig.individualRegister}';
   }
 
   final TextEditingController _usernameController = TextEditingController();
@@ -85,8 +84,8 @@ class _RegisterPageState extends State<RegisterPage> {
               setState(() {
                 // Switch API URL based on the selected tab
                 currentRegisterUrl = index == 0
-                    ? widget.individualRegisterUrl
-                    : widget.businessRegisterUrl;
+                    ? '${ApiConfig.baseUrl}${ApiConfig.individualRegister}'
+                    : '${ApiConfig.baseUrl}${ApiConfig.businessRegister}';
               });
             },
             tabs: const [
